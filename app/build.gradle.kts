@@ -1,4 +1,15 @@
 plugins { alias(libs.plugins.android.application); alias(libs.plugins.kotlin.android); alias(libs.plugins.kotlin.compose); alias(libs.plugins.kotlin.serialization) }
+
+val signingProperties = java.util.Properties().apply {
+    rootProject.file("keystore.properties").takeIf { it.isFile }?.inputStream()?.use(::load)
+}
+val signingStorePath = System.getenv("ANDROID_KEYSTORE_FILE") ?: signingProperties.getProperty("storeFile")
+val signingStorePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD") ?: signingProperties.getProperty("storePassword")
+val signingKeyAlias = System.getenv("ANDROID_KEY_ALIAS") ?: signingProperties.getProperty("keyAlias")
+val signingKeyPassword = System.getenv("ANDROID_KEY_PASSWORD") ?: signingProperties.getProperty("keyPassword")
+val hasReleaseSigning = !signingStorePath.isNullOrBlank() && !signingStorePassword.isNullOrBlank() &&
+    !signingKeyAlias.isNullOrBlank() && !signingKeyPassword.isNullOrBlank()
+
 android {
     namespace = "com.animationstudio.app"; compileSdk = libs.versions.compileSdk.get().toInt()
     defaultConfig {
@@ -6,7 +17,21 @@ android {
         versionCode = 1; versionName = "0.1.0"; testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }
-    buildTypes { release { isMinifyEnabled = false; proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro") } }
+    signingConfigs {
+        if (hasReleaseSigning) {
+            create("release") {
+                storeFile = rootProject.file(signingStorePath)
+                storePassword = signingStorePassword
+                keyAlias = signingKeyAlias
+                keyPassword = signingKeyPassword
+            }
+        }
+    }
+    buildTypes { release {
+        isMinifyEnabled = false
+        proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+        if (hasReleaseSigning) signingConfig = signingConfigs.getByName("release")
+    } }
     buildFeatures { compose = true }
     packaging { resources.excludes += setOf("META-INF/DEPENDENCIES", "META-INF/LICENSE", "META-INF/LICENSE.txt", "META-INF/NOTICE", "META-INF/NOTICE.txt") }
 }
