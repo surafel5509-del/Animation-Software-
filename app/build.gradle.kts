@@ -1,7 +1,9 @@
+import java.util.Properties
+
 plugins { alias(libs.plugins.android.application); alias(libs.plugins.kotlin.android); alias(libs.plugins.kotlin.compose); alias(libs.plugins.kotlin.serialization) }
 
-val signingProperties = java.util.Properties().apply {
-    rootProject.file("keystore.properties").takeIf { it.isFile }?.inputStream()?.use(::load)
+val signingProperties = Properties().apply {
+    rootProject.file("keystore.properties").takeIf { it.isFile }?.inputStream()?.use { load(it) }
 }
 val signingStorePath = System.getenv("ANDROID_KEYSTORE_FILE") ?: signingProperties.getProperty("storeFile")
 val signingStorePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD") ?: signingProperties.getProperty("storePassword")
