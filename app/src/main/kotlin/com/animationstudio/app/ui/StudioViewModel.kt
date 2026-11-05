@@ -310,13 +310,17 @@ class StudioViewModel(application: Application) : AndroidViewModel(application) 
         val project = s.project ?: return
         val target = s.selectedObjectId ?: s.selectedBoneId ?: project.activeScene.activeCameraId ?: return
         val scene = project.activeScene
-        val base = selectedObject()?.transform ?: Transform()
+        val base = selectedObject()?.transform
+            ?: scene.cameras.firstOrNull { it.id == target }?.transform
+            ?: Transform()
         val evaluated = AnimationEvaluator.transform(scene, target, base, s.currentFrame)
         val value = when (property) {
             AnimatableProperty.POSITION_X -> evaluated.position.x; AnimatableProperty.POSITION_Y -> evaluated.position.y
             AnimatableProperty.ROTATION -> evaluated.rotation; AnimatableProperty.SCALE_X -> evaluated.scale.x
             AnimatableProperty.SCALE_Y -> evaluated.scale.y; AnimatableProperty.OPACITY -> evaluated.opacity
             AnimatableProperty.CAMERA_ZOOM -> scene.cameras.firstOrNull { it.id == target }?.zoom ?: 1f
+            AnimatableProperty.BONE_ROTATION -> scene.rigs.flatMap(CharacterRig::bones).firstOrNull { it.id == target }?.rotation ?: 0f
+            AnimatableProperty.BONE_SCALE -> scene.rigs.flatMap(CharacterRig::bones).firstOrNull { it.id == target }?.scale ?: 1f
             else -> 0f
         }
         editProject { it.updateActiveScene { TimelineEditor.upsertKeyframe(it, target, property, Keyframe(s.currentFrame, value)) } }
@@ -330,6 +334,26 @@ class StudioViewModel(application: Application) : AndroidViewModel(application) 
     fun removeKeyframe(property: AnimatableProperty) {
         val s = state.value; val target = s.selectedObjectId ?: return
         editProject { it.updateActiveScene { scene -> TimelineEditor.removeKeyframe(scene, target, property, s.currentFrame) } }
+    }
+
+    fun applyColorToSelection() {
+        val color = state.value.currentColor
+        updateSelectedObject { obj -> when (obj) {
+            is VectorObject.PathObject -> if (obj.fill is FillStyle.Solid) obj.copy(fill = FillStyle.Solid(color))
+                else obj.copy(stroke = (obj.stroke ?: StrokeStyle()).copy(color = color))
+            is VectorObject.ShapeObject -> if (obj.fill != null) obj.copy(fill = FillStyle.Solid(color))
+                else obj.copy(stroke = (obj.stroke ?: StrokeStyle()).copy(color = color))
+            is VectorObject.TextObject -> obj.copy(color = color)
+            is VectorObject.ImageObject -> obj
+        } }
+    }
+
+    fun keySelectedColor() {
+        val s = state.value
+        val obj = selectedObject() ?: return
+        val color = com.animationstudio.vector.VectorGeometry.colorOf(obj) ?: return
+        editProject { it.updateActiveScene { scene -> TimelineEditor.upsertKeyframe(scene, obj.id, AnimatableProperty.COLOR,
+            Keyframe(s.currentFrame, colorValue = color)) } }
     }
 
     fun setFps(fps: Int) = editProject { it.copy(fps = fps.coerceIn(1, 120)) }

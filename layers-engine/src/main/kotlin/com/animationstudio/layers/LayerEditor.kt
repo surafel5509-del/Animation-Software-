@@ -22,7 +22,18 @@ object LayerEditor {
         val index = scene.layers.indexOfFirst { it.id == id }
         if (index < 0) return scene
         val source = scene.layers[index]
-        return scene.copy(layers = scene.layers.toMutableList().apply { add(index + 1, source.copy(id = newId, name = "${source.name} copy")) })
+        val objectIds = mutableMapOf<String, String>()
+        val copiedCels = source.cels.map { cel -> cel.copy(objects = cel.objects.map { obj ->
+            copyObject(obj, UUID.randomUUID().toString()).also { copy -> objectIds[obj.id] = copy.id }
+        }) }
+        val duplicate = source.copy(id = newId, name = "${source.name} copy", cels = copiedCels)
+        val copiedTracks = scene.tracks.filter { it.targetId == id || it.targetId in objectIds }.map { track ->
+            track.copy(id = UUID.randomUUID().toString(), targetId = if (track.targetId == id) newId else objectIds.getValue(track.targetId))
+        }
+        return scene.copy(
+            layers = scene.layers.toMutableList().apply { add(index + 1, duplicate) },
+            tracks = scene.tracks + copiedTracks,
+        )
     }
 
     fun reorder(scene: Scene, id: String, delta: Int): Scene {
@@ -57,13 +68,25 @@ object LayerEditor {
 
     fun addObject(scene: Scene, layerId: String, frame: Int, obj: VectorObject): Scene = update(scene, layerId) { layer ->
         val cel = layer.celAt(frame) ?: DrawingCel(frame)
-        val updated = if (cel.frame == frame) cel else DrawingCel(frame, objects = cel.objects)
+        val inherited = when {
+            cel.frame == frame -> cel.objects
+            layer.type == LayerType.RASTER -> emptyList()
+            else -> cel.objects.map { copyObject(it, UUID.randomUUID().toString()) }
+        }
+        val updated = if (cel.frame == frame) cel else DrawingCel(frame, objects = inherited)
         layer.copy(cels = (layer.cels.filterNot { it.frame == updated.frame } + updated.copy(objects = updated.objects + obj)).sortedBy(DrawingCel::frame))
     }
 
     fun deleteObject(scene: Scene, layerId: String, frame: Int, objectId: String): Scene = update(scene, layerId) { layer ->
         val cel = layer.celAt(frame) ?: return@update layer
         layer.copy(cels = layer.cels.map { if (it.frame == cel.frame) it.copy(objects = it.objects.filterNot { it.id == objectId }) else it })
+    }
+
+    private fun copyObject(obj: VectorObject, id: String): VectorObject = when (obj) {
+        is VectorObject.PathObject -> obj.copy(id = id)
+        is VectorObject.ShapeObject -> obj.copy(id = id)
+        is VectorObject.TextObject -> obj.copy(id = id)
+        is VectorObject.ImageObject -> obj.copy(id = id)
     }
 
     fun visibleLayers(scene: Scene): List<Layer> {

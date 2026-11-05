@@ -20,6 +20,9 @@ fun DrawScope.drawVectorObject(
     alphaMultiplier: Float = 1f,
 ) {
     val transform = AnimationEvaluator.transform(scene, obj.id, obj.transform, frame)
+    val baseColor = VectorGeometry.colorOf(obj)
+    val animatedColor = scene.tracks.firstOrNull { it.targetId == obj.id && it.property == AnimatableProperty.COLOR }
+        ?.let { track -> baseColor?.let { color -> AnimationEvaluator.sampleColor(track, frame, color) } }
     withTransform({
         translate(transform.position.x, transform.position.y)
         rotate(Math.toDegrees(transform.rotation.toDouble()).toFloat(), Offset.Zero)
@@ -27,8 +30,8 @@ fun DrawScope.drawVectorObject(
     }) {
         val alpha = transform.opacity.coerceIn(0f, 1f) * alphaMultiplier
         when (obj) {
-            is VectorObject.PathObject -> drawPathObject(obj, tint, alpha)
-            is VectorObject.ShapeObject -> drawShapeObject(obj, tint, alpha)
+            is VectorObject.PathObject -> drawPathObject(obj, tint, alpha, animatedColor)
+            is VectorObject.ShapeObject -> drawShapeObject(obj, tint, alpha, animatedColor)
             is VectorObject.TextObject -> drawTextObject(obj, scene, frame, tint, alpha)
             is VectorObject.ImageObject -> images[obj.assetId]?.let { image ->
                 drawImage(image, dstOffset = androidx.compose.ui.unit.IntOffset(obj.bounds.left.toInt(), obj.bounds.top.toInt()),
@@ -38,17 +41,17 @@ fun DrawScope.drawVectorObject(
     }
 }
 
-private fun DrawScope.drawPathObject(obj: VectorObject.PathObject, tint: Color?, alpha: Float) {
+private fun DrawScope.drawPathObject(obj: VectorObject.PathObject, tint: Color?, alpha: Float, animatedColor: Int?) {
     if (obj.points.isEmpty()) return
     val path = obj.points.toComposePath(obj.closed)
     obj.fill?.let { fill ->
         when (fill) {
-            is FillStyle.Solid -> drawPath(path, tint ?: Color(fill.color), alpha = alpha)
+            is FillStyle.Solid -> drawPath(path, tint ?: Color(animatedColor ?: fill.color), alpha = alpha)
             else -> fill.toBrush()?.let { brush -> drawPath(path, brush, alpha = alpha) }
         }
     }
     val stroke = obj.stroke ?: return
-    val color = tint ?: Color(stroke.color)
+    val color = tint ?: Color(animatedColor ?: stroke.color)
     val strokeAlpha = alpha * stroke.opacity
     val variablePressure = obj.points.any { it.pressure != 1f } && obj.points.all { it.controlIn == null && it.controlOut == null }
     if (variablePressure && obj.points.size > 1) {
@@ -62,7 +65,7 @@ private fun DrawScope.drawPathObject(obj: VectorObject.PathObject, tint: Color?,
             pathEffect = if (stroke.dashPattern.isEmpty()) null else PathEffect.dashPathEffect(stroke.dashPattern.toFloatArray())))
 }
 
-private fun DrawScope.drawShapeObject(obj: VectorObject.ShapeObject, tint: Color?, alpha: Float) {
+private fun DrawScope.drawShapeObject(obj: VectorObject.ShapeObject, tint: Color?, alpha: Float, animatedColor: Int?) {
     val path = Path()
     when (obj.shape) {
         ShapeType.RECTANGLE -> path.addRoundRect(androidx.compose.ui.geometry.RoundRect(obj.bounds.toComposeRect(), obj.cornerRadius, obj.cornerRadius))
@@ -75,12 +78,12 @@ private fun DrawScope.drawShapeObject(obj: VectorObject.ShapeObject, tint: Color
     }
     obj.fill?.let { fill ->
         when (fill) {
-            is FillStyle.Solid -> drawPath(path, tint ?: Color(fill.color), alpha = alpha)
+            is FillStyle.Solid -> drawPath(path, tint ?: Color(animatedColor ?: fill.color), alpha = alpha)
             else -> fill.toBrush()?.let { drawPath(path, it, alpha = alpha) }
         }
     }
     obj.stroke?.let { stroke ->
-        drawPath(path, tint ?: Color(stroke.color), alpha = alpha * stroke.opacity,
+        drawPath(path, tint ?: Color(animatedColor ?: stroke.color), alpha = alpha * stroke.opacity,
             style = Stroke(stroke.width, cap = stroke.cap.toComposeCap(), join = stroke.join.toComposeJoin()))
     }
 }

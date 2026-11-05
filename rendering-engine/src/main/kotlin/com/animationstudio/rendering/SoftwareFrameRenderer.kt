@@ -66,13 +66,16 @@ class SoftwareFrameRenderer(context: Context, private val project: StudioProject
     private fun drawObject(canvas: Canvas, scene: Scene, obj: VectorObject, frame: Int) {
         val evaluated = AnimationEvaluator.transform(scene, obj.id, obj.transform, frame)
         val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply { alpha = (evaluated.opacity * 255).toInt().coerceIn(0, 255) }
+        val baseColor = VectorGeometry.colorOf(obj)
+        val objectColor = scene.tracks.firstOrNull { it.targetId == obj.id && it.property == AnimatableProperty.COLOR }
+            ?.let { track -> baseColor?.let { color -> AnimationEvaluator.sampleColor(track, frame, color) } }
         val save = canvas.save()
         canvas.translate(evaluated.position.x, evaluated.position.y)
         canvas.rotate(Math.toDegrees(evaluated.rotation.toDouble()).toFloat())
         canvas.scale(evaluated.scale.x, evaluated.scale.y)
         when (obj) {
-            is VectorObject.PathObject -> drawPath(canvas, obj, paint)
-            is VectorObject.ShapeObject -> drawShape(canvas, obj, paint)
+            is VectorObject.PathObject -> drawPath(canvas, obj, paint, objectColor)
+            is VectorObject.ShapeObject -> drawShape(canvas, obj, paint, objectColor)
             is VectorObject.TextObject -> {
                 paint.color = animatedColor(scene, obj, frame)
                 paint.textSize = obj.size
@@ -92,17 +95,17 @@ class SoftwareFrameRenderer(context: Context, private val project: StudioProject
         .firstOrNull { it.targetId == obj.id && it.property == AnimatableProperty.COLOR }
         ?.let { AnimationEvaluator.sampleColor(it, frame, obj.color) } ?: obj.color
 
-    private fun drawPath(canvas: Canvas, obj: VectorObject.PathObject, basePaint: Paint) {
+    private fun drawPath(canvas: Canvas, obj: VectorObject.PathObject, basePaint: Paint, objectColor: Int?) {
         if (obj.points.isEmpty()) return
         val path = obj.points.toAndroidPath(obj.closed)
         obj.fill?.let { fill ->
             val paint = Paint(basePaint).apply { style = Paint.Style.FILL; shader = fill.toShader(obj) }
-            if (fill is FillStyle.Solid) paint.color = fill.color
+            if (fill is FillStyle.Solid) paint.color = objectColor ?: fill.color
             canvas.drawPath(path, paint)
         }
         val stroke = obj.stroke ?: return
         val paint = Paint(basePaint).apply {
-            style = Paint.Style.STROKE; color = stroke.color; strokeWidth = stroke.width
+            style = Paint.Style.STROKE; color = objectColor ?: stroke.color; strokeWidth = stroke.width
             strokeCap = when (stroke.cap) { StrokeCap.BUTT -> Paint.Cap.BUTT; StrokeCap.ROUND -> Paint.Cap.ROUND; StrokeCap.SQUARE -> Paint.Cap.SQUARE }
             strokeJoin = when (stroke.join) { StrokeJoin.MITER -> Paint.Join.MITER; StrokeJoin.ROUND -> Paint.Join.ROUND; StrokeJoin.BEVEL -> Paint.Join.BEVEL }
             if (stroke.dashPattern.isNotEmpty()) pathEffect = DashPathEffect(stroke.dashPattern.toFloatArray(), 0f)
@@ -119,7 +122,7 @@ class SoftwareFrameRenderer(context: Context, private val project: StudioProject
         } else canvas.drawPath(path, paint)
     }
 
-    private fun drawShape(canvas: Canvas, obj: VectorObject.ShapeObject, basePaint: Paint) {
+    private fun drawShape(canvas: Canvas, obj: VectorObject.ShapeObject, basePaint: Paint, objectColor: Int?) {
         val path = Path()
         when (obj.shape) {
             ShapeType.RECTANGLE -> path.addRoundRect(obj.bounds.toAndroid(), obj.cornerRadius, obj.cornerRadius, Path.Direction.CW)
@@ -132,12 +135,12 @@ class SoftwareFrameRenderer(context: Context, private val project: StudioProject
         }
         obj.fill?.let { fill ->
             val paint = Paint(basePaint).apply { style = Paint.Style.FILL; shader = fill.toShader(obj) }
-            if (fill is FillStyle.Solid) paint.color = fill.color
+            if (fill is FillStyle.Solid) paint.color = objectColor ?: fill.color
             canvas.drawPath(path, paint)
         }
         obj.stroke?.let { stroke ->
             val paint = Paint(basePaint).apply {
-                style = Paint.Style.STROKE; color = stroke.color; strokeWidth = stroke.width
+                style = Paint.Style.STROKE; color = objectColor ?: stroke.color; strokeWidth = stroke.width
                 strokeCap = Paint.Cap.ROUND; strokeJoin = Paint.Join.ROUND
                 if (stroke.dashPattern.isNotEmpty()) pathEffect = DashPathEffect(stroke.dashPattern.toFloatArray(), 0f)
             }

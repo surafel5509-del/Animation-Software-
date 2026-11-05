@@ -40,6 +40,14 @@ jobs:
             echo '```'
           } > ci-diagnostics.md
           gh issue create --repo "$GITHUB_REPOSITORY" --title "CI diagnostics: ${GITHUB_SHA::12}" --body-file ci-diagnostics.md
+      - name: Close temporary diagnostics after success
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for issue in $(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search 'CI diagnostics in:title' --json number --jq '.[].number'); do
+            gh issue close --repo "$GITHUB_REPOSITORY" "$issue"
+          done
       - uses: actions/upload-artifact@v4
         with:
           name: animation-studio-debug-apk

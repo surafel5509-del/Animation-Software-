@@ -13,6 +13,10 @@ val hasReleaseSigning = !signingStorePath.isNullOrBlank() && !signingStorePasswo
     !signingKeyAlias.isNullOrBlank() && !signingKeyPassword.isNullOrBlank()
 
 android {
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
     namespace = "com.animationstudio.app"; compileSdk = libs.versions.compileSdk.get().toInt()
     defaultConfig {
         applicationId = "com.animationstudio.app"; minSdk = libs.versions.minSdk.get().toInt(); targetSdk = libs.versions.targetSdk.get().toInt()
@@ -45,4 +49,10 @@ dependencies {
     debugImplementation(libs.compose.ui.tooling); debugImplementation(libs.compose.ui.test.manifest)
     testImplementation(libs.junit); testImplementation(libs.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.junit); androidTestImplementation(libs.androidx.espresso); androidTestImplementation(platform(libs.compose.bom)); androidTestImplementation(libs.compose.ui.test.junit4)
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+    }
 }

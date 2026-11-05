@@ -174,8 +174,8 @@ data class Bone(
     val scale: Float = 1f,
     val inheritRotation: Boolean = true,
     val inheritScale: Boolean = true,
-    val minRotation: Float = -Float.PI,
-    val maxRotation: Float = Float.PI,
+    val minRotation: Float = -3.141592653589793f,
+    val maxRotation: Float = 3.141592653589793f,
     val pinned: Boolean = false,
 ) {
     init { require(length > 0f && scale > 0f && minRotation <= maxRotation) }

@@ -175,6 +175,12 @@ private fun ColorPanel(viewModel: StudioViewModel, state: EditorUiState) {
         Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(8.dp)) {
             palette.forEach { color -> Box(Modifier.size(42.dp).padding(3.dp).background(Color(color)).border(1.dp, MaterialTheme.colorScheme.outline).clickable { viewModel.setColor(color) }) }
         }
+        Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState())) {
+            TextButton(viewModel::applyColorToSelection, enabled = state.selectedObjectId != null) { Text("Apply to selection") }
+            TextButton(viewModel::keySelectedColor, enabled = state.selectedObjectId != null) {
+                Icon(Icons.Default.Diamond, null); Text("Key color")
+            }
+        }
         Text("Current color is used by drawing, shapes, text, fill, and gradient tools.", Modifier.padding(12.dp), style = MaterialTheme.typography.bodySmall)
     }
 }
