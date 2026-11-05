@@ -1,0 +1,8 @@
+<resources>
+    <style name="Theme.AnimationStudio" parent="android:Theme.Material.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:windowBackground">@color/studio_background</item>
+        <item name="android:statusBarColor">@color/studio_background</item>
+        <item name="android:navigationBarColor">@color/studio_background</item>
+    </style>
+</resources>
