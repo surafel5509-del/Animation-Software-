@@ -1,6 +1,7 @@
 package com.animationstudio.rendering
 
 import android.graphics.Bitmap
+import android.graphics.ImageFormat
 import android.media.*
 import java.io.FileDescriptor
 import kotlin.math.roundToInt

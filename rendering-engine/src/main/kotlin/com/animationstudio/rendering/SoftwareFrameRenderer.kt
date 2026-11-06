@@ -6,6 +6,8 @@ import android.util.LruCache
 import com.animationstudio.animation.AnimationEvaluator
 import com.animationstudio.camera.CameraEvaluator
 import com.animationstudio.core.model.*
+import com.animationstudio.core.model.BlendMode
+import com.animationstudio.core.model.RectF
 import com.animationstudio.effects.BitmapEffects
 import com.animationstudio.projectmanager.AssetStorage
 import com.animationstudio.vector.VectorGeometry
