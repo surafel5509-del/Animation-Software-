@@ -6,6 +6,7 @@ import androidx.work.*
 import com.animationstudio.projectmanager.ProjectDatabase
 import com.animationstudio.projectmanager.ProjectRepository
 import kotlinx.serialization.encodeToString
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
 class RenderWorker(context: Context, parameters: WorkerParameters) : CoroutineWorker(context, parameters) {

@@ -86,7 +86,7 @@ object SkeletonSolver {
                     acc + (currentPose.matrix * local) * (weight.weight / total)
                 }
             }
-        })
+        }
     }
 }
 

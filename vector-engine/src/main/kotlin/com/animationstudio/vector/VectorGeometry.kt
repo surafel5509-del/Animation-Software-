@@ -24,10 +24,13 @@ object VectorGeometry {
 
     fun hitTest(obj: VectorObject, point: Vec2, tolerance: Float = 12f): Boolean {
         if (!obj.visible || obj.locked) return false
-        if (obj is VectorObject.PathObject && obj.stroke != null) {
-            val points = obj.points.map { obj.transform.apply(it.position) }
-            val distance = points.zipWithNext().minOfOrNull { (a, b) -> point.distanceToSegment(a, b) } ?: Float.MAX_VALUE
-            if (distance <= tolerance + obj.stroke.width / 2f) return true
+        if (obj is VectorObject.PathObject) {
+            val stroke = obj.stroke
+            if (stroke != null) {
+                val points = obj.points.map { obj.transform.apply(it.position) }
+                val distance = points.zipWithNext().minOfOrNull { (a, b) -> point.distanceToSegment(a, b) } ?: Float.MAX_VALUE
+                if (distance <= tolerance + stroke.width / 2f) return true
+            }
         }
         return bounds(obj)?.expand(tolerance)?.contains(point) == true
     }
