@@ -17,6 +17,9 @@ class ProjectFormatException(message: String, cause: Throwable? = null) : Except
 
 data class DecodedProject(val project: StudioProject, val assets: Map<String, ByteArray>)
 
+@Serializable
+internal data class ArchiveManifest(val format: String, val version: Int, val generator: String = "Animation Studio")
+
 /** Versioned ZIP container. scene.json always retains editable objects and animation tracks. */
 class AnimStudioCodec {
     private val json = Json {
@@ -113,9 +116,6 @@ class AnimStudioCodec {
         if (name.isBlank() || name.startsWith('/') || name.contains('\\') || name.split('/').any { it == ".." })
             throw ProjectFormatException("Unsafe archive path")
     }
-
-    @Serializable
-    private data class ArchiveManifest(val format: String, val version: Int, val generator: String = "Animation Studio")
 
     companion object {
         const val FORMAT_NAME = "com.animationstudio.project"
