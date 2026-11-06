@@ -10,10 +10,12 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.Serializable
 import kotlin.coroutines.coroutineContext
 
 enum class ExportFormat { PNG, JPEG, PNG_SEQUENCE, JPEG_SEQUENCE, GIF, MP4 }
 
+@Serializable
 data class ExportConfig(
     val format: ExportFormat = ExportFormat.MP4,
     val width: Int = 1920,

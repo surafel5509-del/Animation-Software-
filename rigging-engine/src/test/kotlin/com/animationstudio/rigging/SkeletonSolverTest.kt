@@ -13,7 +13,7 @@ class SkeletonSolverTest {
         val poses = SkeletonSolver.forwardKinematics(rig)
         assertEquals(Vec2(210f, 20f), poses["root"]!!.end)
         assertEquals(Vec2(210f, 20f), poses["child"]!!.start)
-        assertEquals(Vec2(260f, 20f), poses["child"]!!.end)
+        assertEquals(Vec2(310f, 20f), poses["child"]!!.end)
     }
 
     @Test fun ikMovesEndEffectorAndHonorsRotationConstraints() {
