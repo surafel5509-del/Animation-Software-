@@ -2,6 +2,7 @@ package com.animationstudio.drawing
 
 import com.animationstudio.core.model.*
 import com.animationstudio.vector.VectorGeometry.distance
+import com.animationstudio.vector.VectorGeometry.distanceToSegment
 import java.util.UUID
 import kotlin.math.abs
 
@@ -58,7 +59,7 @@ class StrokeBuilder(
             var maxDistance = 0f
             var index = -1
             for (i in first + 1 until last) {
-                val distance = with(VectorGeometry) { input[i].position.distanceToSegment(input[first].position, input[last].position) }
+                val distance = input[i].position.distanceToSegment(input[first].position, input[last].position)
                 if (distance > maxDistance) { maxDistance = distance; index = i }
             }
             if (maxDistance > tolerance && index >= 0) {
