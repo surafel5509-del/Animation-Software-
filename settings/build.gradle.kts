@@ -3,7 +3,8 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
-    } namespace = "com.animationstudio.settings"; compileSdk = libs.versions.compileSdk.get().toInt(); defaultConfig { minSdk = libs.versions.minSdk.get().toInt() } }
+    }
+    namespace = "com.animationstudio.settings"; compileSdk = libs.versions.compileSdk.get().toInt(); defaultConfig { minSdk = libs.versions.minSdk.get().toInt() } }
 dependencies { implementation(libs.androidx.core.ktx); implementation(libs.datastore.preferences); implementation(libs.kotlinx.coroutines.android) }
 
 kotlin {
