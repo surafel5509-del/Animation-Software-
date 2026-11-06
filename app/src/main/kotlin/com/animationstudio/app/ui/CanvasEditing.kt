@@ -8,6 +8,7 @@ import com.animationstudio.graphics.Matrix3
 import com.animationstudio.layers.LayerEditor
 import com.animationstudio.rigging.SkeletonSolver
 import com.animationstudio.vector.VectorGeometry
+import kotlinx.coroutines.flow.update
 import java.util.UUID
 import java.util.WeakHashMap
 import kotlin.math.atan2
@@ -124,7 +125,7 @@ fun StudioViewModel.onCanvasUp(point: Vec2) {
 
 fun StudioViewModel.onCanvasCancel() {
     val gesture = canvasGestures.remove(this)
-    if (gesture?.historyRecorded && gesture.originalProject != null) replaceWithoutHistory(gesture.originalProject)
+    if (gesture != null && gesture.historyRecorded && gesture.originalProject != null) replaceWithoutHistory(gesture.originalProject)
     mutableState.update { it.copy(draft = null) }
 }
 

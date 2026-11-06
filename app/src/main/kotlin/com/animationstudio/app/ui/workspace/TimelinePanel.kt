@@ -18,7 +18,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.nativeCanvas
-import androidx.compose.ui.graphics.asFrameworkPaint
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
@@ -100,7 +99,7 @@ private fun TrackLabel(layer: Layer, state: EditorUiState, viewModel: StudioView
 
 @Composable
 private fun FrameRuler(project: StudioProject, state: EditorUiState, frameWidthPx: Float, width: androidx.compose.ui.unit.Dp, onSeek: (Int) -> Unit) {
-    val textPaint = androidx.compose.ui.graphics.Paint().asFrameworkPaint().apply { color = 0xffaeb5c2.toInt(); textSize = 18f }
+    val textPaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply { color = 0xffaeb5c2.toInt(); textSize = 18f }
     Canvas(Modifier.width(width).height(30.dp).pointerInput(project.durationFrames, frameWidthPx) {
         detectDragGestures(
             onDragStart = { offset -> onSeek((offset.x / frameWidthPx).toInt()) },

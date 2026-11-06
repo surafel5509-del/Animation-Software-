@@ -14,6 +14,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.animationstudio.app.ui.*
@@ -60,7 +61,7 @@ private fun LayersPanel(viewModel: StudioViewModel, state: EditorUiState) {
     Column {
         Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), verticalAlignment = Alignment.CenterVertically) {
             IconButton({ viewModel.addLayer() }) { Icon(Icons.Default.Add, "Add layer") }
-            IconButton({ state.selectedLayerId?.let(viewModel::groupSelectedLayer) }) { Icon(Icons.Default.CreateNewFolder, "Group") }
+            IconButton({ if (state.selectedLayerId != null) viewModel.groupSelectedLayer() }) { Icon(Icons.Default.CreateNewFolder, "Group") }
             IconButton({ state.selectedLayerId?.let { viewModel.reorderLayer(it, 1) } }) { Icon(Icons.Default.ArrowUpward, "Move up") }
             IconButton({ state.selectedLayerId?.let { viewModel.reorderLayer(it, -1) } }) { Icon(Icons.Default.ArrowDownward, "Move down") }
             IconButton({ state.selectedLayerId?.let(viewModel::duplicateLayer) }) { Icon(Icons.Default.ContentCopy, "Duplicate") }

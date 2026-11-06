@@ -20,6 +20,7 @@ fun WorkspaceScreen(viewModel: StudioViewModel, state: EditorUiState, onNew: () 
         var compactInspector by remember { mutableStateOf(false) }
         var timelineHeight by remember { mutableStateOf(230.dp) }
         val density = LocalDensity.current
+        val containerMaxHeight = maxHeight
         Column(Modifier.fillMaxSize()) {
             if (!state.fullScreenCanvas) {
                 TopToolbar(viewModel, state, onNew, onOpen, onSaveAs, onImport)
@@ -49,11 +50,11 @@ fun WorkspaceScreen(viewModel: StudioViewModel, state: EditorUiState, onNew: () 
                 if (!compact && state.showInspector && !state.fullScreenCanvas) InspectorPanel(viewModel, state, onImport)
             }
             if (state.showTimeline && !state.fullScreenCanvas) {
-                Box(Modifier.fillMaxWidth().height(6.dp).pointerInput(maxHeight) {
+                Box(Modifier.fillMaxWidth().height(6.dp).pointerInput(containerMaxHeight) {
                     detectVerticalDragGestures { change, dragAmount ->
                         change.consume()
                         val delta = with(density) { (-dragAmount).toDp() }
-                        timelineHeight = (timelineHeight + delta).coerceIn(140.dp, maxHeight * .55f)
+                        timelineHeight = (timelineHeight + delta).coerceIn(140.dp, containerMaxHeight * .55f)
                     }
                 })
                 TimelinePanel(viewModel, state, Modifier.height(if (compact) minOf(timelineHeight, 210.dp) else timelineHeight))
