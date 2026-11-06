@@ -23,7 +23,7 @@ class AnimStudioCodec {
         prettyPrint = true
         encodeDefaults = true
         ignoreUnknownKeys = true
-        classDiscriminator = "kind"
+        classDiscriminator = "objectType"
     }
 
     fun write(

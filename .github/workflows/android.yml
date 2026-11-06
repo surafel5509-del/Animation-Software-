@@ -37,6 +37,7 @@ jobs:
             echo "Automated diagnostics for $GITHUB_SHA ($GITHUB_RUN_ID)."
             echo '```text'
             grep -hE '(^e: |error:|FAILURE:|What went wrong|Compilation error|Could not|Exception|> Task .*FAILED)' unit-tests.log assemble.log 2>/dev/null | tail -250
+            find . -path '*/test-results/*' -name '*.xml' -exec grep -h '<failure' {} \; 2>/dev/null | head -20
             echo '```'
           } > ci-diagnostics.md
           gh issue create --repo "$GITHUB_REPOSITORY" --title "CI diagnostics: ${GITHUB_SHA::12}" --body-file ci-diagnostics.md

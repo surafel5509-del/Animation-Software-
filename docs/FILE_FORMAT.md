@@ -10,7 +10,7 @@ An Animation Studio project is a UTF-8 JSON document inside a standard ZIP conta
 
 ## Compatibility and safety
 
-- `kind` is the polymorphic type discriminator for vector objects and fills. Unknown JSON fields are ignored to permit additive changes.
+- `objectType` is the polymorphic type discriminator for vector objects and fills. Unknown JSON fields are ignored to permit additive changes.
 - A breaking model change increments `formatVersion` and requires an explicit migration before loading.
 - IDs are stable UUID strings. Object edits and animation tracks therefore survive a save/reopen cycle.
 - Readers reject unsafe paths, duplicate entries, invalid references, non-finite geometry, duplicate IDs, oversized entries, and archives exceeding configured memory limits.
